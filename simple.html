@@ -116,6 +116,85 @@
     .composer input{all:unset; flex:1; padding:12px 16px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.05); transition:.18s border-color ease,.18s background ease}
     .composer input:focus{border-color:var(--accent); background:rgba(255,255,255,.08); outline:none}
 
+    /* Tabs */
+    .tabs-bar{display:flex; gap:2px; padding:2px 6px 0; background:rgba(0,0,0,.1); border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:thin; height:28px}
+    .tab{
+      display:flex; align-items:center; gap:4px; padding:3px 8px; height:24px;
+      border:1px solid transparent; border-bottom:none;
+      border-radius:4px 4px 0 0; cursor:pointer; font-size:11px; font-weight:500;
+      background:rgba(255,255,255,.03); color:var(--muted);
+      transition:.15s all ease; white-space:nowrap; user-select:none;
+    }
+    .tab:hover{background:rgba(255,255,255,.06)}
+    .tab.active{background:linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.06)); color:var(--text); border-color:var(--border); border-bottom-color:transparent; position:relative}
+    .tab.active::after{content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:var(--accent)}
+    .tab-icon{width:12px; height:12px; opacity:.7}
+    .tab-close{width:14px; height:14px; border-radius:3px; display:grid; place-items:center; margin-left:2px; opacity:.6; transition:.15s all ease}
+    .tab-close:hover{background:rgba(255,255,255,.15); opacity:1}
+    .tab-label{max-width:180px; overflow:hidden; text-overflow:ellipsis}
+
+    .content-area{flex:1; overflow:hidden; position:relative}
+    .content-panel{display:none; height:100%; flex-direction:column}
+    .content-panel.active{display:flex}
+
+    .file-preview{flex:1; overflow:auto; padding:20px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px}
+
+    /* Context Menu */
+    .context-menu{
+      position:fixed; display:none; min-width:180px;
+      background:rgba(15,18,30,.98); border:1px solid var(--border);
+      border-radius:12px; padding:6px; box-shadow:var(--shadow);
+      backdrop-filter:blur(12px); z-index:100; animation:menuFadeIn .15s ease;
+    }
+    @keyframes menuFadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .context-menu.show{display:block}
+    .context-menu-item{
+      display:flex; align-items:center; gap:10px; padding:8px 10px;
+      border-radius:8px; cursor:pointer; font-size:13px; font-weight:500;
+      color:var(--text); transition:.15s all ease; user-select:none;
+    }
+    .context-menu-item:hover{background:rgba(255,255,255,.08)}
+    .context-menu-item.active{background:rgba(124,92,255,.15); color:var(--accent)}
+    .context-menu-item .menu-icon{width:16px; height:16px; opacity:.7}
+    .context-menu-divider{height:1px; background:var(--border); margin:4px 0}
+    .tag.no-label{color:#cbd5e1; border-color:rgba(203,213,225,.25); background:rgba(255,255,255,.03)}
+
+    /* Operation Log */
+    .operation-log{
+      margin:12px 0; padding:12px; border-radius:10px;
+      background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.08);
+      font-family:'SF Mono', Monaco, 'Cascadia Code', monospace; font-size:12px;
+    }
+    .operation-log-header{
+      display:flex; align-items:center; gap:8px; margin-bottom:10px;
+      font-weight:600; color:var(--muted); font-size:11px; text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+    .operation-step{
+      display:flex; align-items:center; gap:8px; padding:6px 8px;
+      border-radius:6px; margin:4px 0; transition:.2s all ease;
+    }
+    .operation-step-icon{
+      width:14px; height:14px; display:flex; align-items:center; justify-content:center;
+      font-size:10px; flex-shrink:0;
+    }
+    .operation-step-text{flex:1; line-height:1.4}
+    .operation-step.pending{color:var(--muted); opacity:.5}
+    .operation-step.pending .operation-step-icon{color:var(--muted)}
+    .operation-step.active{
+      color:var(--accent-4); background:rgba(56,189,248,.08);
+      animation:pulse 1.5s ease-in-out infinite;
+    }
+    .operation-step.active .operation-step-icon{color:var(--accent-4)}
+    .operation-step.complete{color:var(--ok)}
+    .operation-step.complete .operation-step-icon{color:var(--ok)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+    .typing-cursor{
+      display:inline-block; width:2px; height:1em; background:var(--accent);
+      margin-left:2px; animation:blink .8s infinite;
+    }
+    @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+
     /* Responsive */
     @media (max-width: 980px){
       .main{grid-template-columns:1fr; height:auto}
@@ -242,6 +321,41 @@
         </div>
       </aside>
 
+      <!-- Context Menu -->
+      <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" data-label="device">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8" fill="#38bdf8"/>
+          </svg>
+          <span>Device</span>
+        </div>
+        <div class="context-menu-item" data-label="pricing">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8" fill="#f59e0b"/>
+          </svg>
+          <span>Pricing</span>
+        </div>
+        <div class="context-menu-item" data-label="outcome">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8" fill="#22c55e"/>
+          </svg>
+          <span>Outcome</span>
+        </div>
+        <div class="context-menu-item" data-label="na">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8" fill="#a9b3c7"/>
+          </svg>
+          <span>N/A</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-label="no-label">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>No Label</span>
+        </div>
+      </div>
+
       <!-- Main: Chat demo -->
       <main>
         <div class="room-head">
@@ -252,7 +366,21 @@
           </div>
         </div>
 
-        <div class="chat" id="chat">
+        <!-- Tabs Bar -->
+        <div class="tabs-bar" id="tabsBar">
+          <div class="tab active" data-tab-id="chat" onclick="switchToTab('chat')">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span class="tab-label">Chat</span>
+          </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+          <!-- Chat Panel -->
+          <div class="content-panel active" id="panel-chat">
+            <div class="chat" id="chat">
           <div class="msg bot">
             Welcome! I can help you with three powerful capabilities:<br><br>
             <strong>1. Label folders/files</strong> — Automatically categorize items as <em>Device</em>, <em>Pricing</em>, <em>Outcome</em>, or <em>Unknown</em> to organize your workspace.<br><br>
@@ -349,37 +477,77 @@
             Documents are ready for review. You can access the diff preview from the header menu.
             <div class="meta">Assistant • 8s</div>
           </div>
-        </div>
+            </div>
 
-        <div class="composer">
-          <input placeholder="Ask questions, request actions, or label documents…" id="messageInput" />
-          <button class="btn primary" onclick="sendMessage()">Send</button>
+            <div class="composer">
+              <input placeholder="Ask questions, request actions, or label documents…" id="messageInput" />
+              <button class="btn primary" onclick="sendMessage()">Send</button>
+            </div>
+          </div>
         </div>
       </main>
     </div>
   </div>
 
   <script>
-    function sendMessage(){
+    // Tab Management State
+    const tabState = {
+      tabs: [{ id: 'chat', name: 'Chat', type: 'chat' }],
+      activeTabId: 'chat',
+      tabHistory: ['chat']
+    };
+
+    // Send Message Function with Mock AI
+    async function sendMessage(){
       const input = document.getElementById('messageInput');
       const message = input.value.trim();
       if (!message) return;
-      
+
       const chat = document.getElementById('chat');
+
+      // Add user message
       const u = document.createElement('div');
       u.className='msg user';
       u.textContent = message;
       chat.appendChild(u);
       input.value = '';
+      chat.scrollTop = chat.scrollHeight;
 
-      setTimeout(() => {
-        const b = document.createElement('div');
-        b.className='msg bot';
-        b.innerHTML = 'Processing your request...';
-        chat.appendChild(b);
-        chat.scrollTop = chat.scrollHeight;
-      }, 300);
+      // Detect intent and generate operations
+      const intents = mockResponseEngine.detectIntent(message);
+      const operations = mockResponseEngine.generateOperations(intents, message);
+      const responseText = mockResponseEngine.generateResponse(intents, message);
 
+      // Small delay before showing bot response
+      await new Promise(resolve => setTimeout(resolve, 400));
+
+      // Create bot message container
+      const botMsg = document.createElement('div');
+      botMsg.className = 'msg bot';
+      chat.appendChild(botMsg);
+
+      // Add operation log
+      const { logContainer, stepElements } = createOperationLog(operations);
+      botMsg.appendChild(logContainer);
+      chat.scrollTop = chat.scrollHeight;
+
+      // Execute operations
+      await executeOperations(stepElements, operations);
+
+      // Add response text container
+      const responseContainer = document.createElement('div');
+      responseContainer.style.marginTop = '12px';
+      botMsg.appendChild(responseContainer);
+      chat.scrollTop = chat.scrollHeight;
+
+      // Stream the response text
+      await streamText(responseContainer, responseText, chat);
+
+      // Add metadata timestamp
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = 'Assistant • just now';
+      botMsg.appendChild(meta);
       chat.scrollTop = chat.scrollHeight;
     }
 
@@ -387,6 +555,467 @@
       if (e.key === 'Enter') {
         sendMessage();
       }
+    });
+
+    // Open Tab Function
+    function openTab(fileName) {
+      const tabId = `file-${fileName.replace(/[^a-zA-Z0-9]/g, '-')}`;
+
+      // Check if tab already exists
+      const existingTab = tabState.tabs.find(t => t.id === tabId);
+      if (existingTab) {
+        switchToTab(tabId);
+        return;
+      }
+
+      // Add new tab
+      tabState.tabs.push({ id: tabId, name: fileName, type: 'file' });
+      tabState.tabHistory.push(tabId);
+
+      // Create tab element
+      const tabsBar = document.getElementById('tabsBar');
+      const tabEl = document.createElement('div');
+      tabEl.className = 'tab';
+      tabEl.setAttribute('data-tab-id', tabId);
+      tabEl.innerHTML = `
+        <svg class="tab-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span class="tab-label">${fileName}</span>
+        <div class="tab-close" onclick="closeTab('${tabId}', event)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      `;
+      tabEl.onclick = (e) => {
+        if (!e.target.closest('.tab-close')) {
+          switchToTab(tabId);
+        }
+      };
+      tabsBar.appendChild(tabEl);
+
+      // Create content panel
+      const contentArea = document.querySelector('.content-area');
+      const panel = document.createElement('div');
+      panel.className = 'content-panel';
+      panel.id = `panel-${tabId}`;
+      panel.innerHTML = `
+        <div class="file-preview">
+          <div style="text-align:center">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:.3; margin-bottom:12px">
+              <path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <div style="font-weight:600; color:var(--text); margin-bottom:6px">${fileName}</div>
+            <div>File preview placeholder</div>
+          </div>
+        </div>
+      `;
+      contentArea.appendChild(panel);
+
+      // Switch to new tab
+      switchToTab(tabId);
+    }
+
+    // Switch to Tab Function
+    function switchToTab(tabId) {
+      tabState.activeTabId = tabId;
+
+      // Update tab history
+      const historyIndex = tabState.tabHistory.indexOf(tabId);
+      if (historyIndex > -1) {
+        tabState.tabHistory.splice(historyIndex, 1);
+      }
+      tabState.tabHistory.push(tabId);
+
+      // Update tab active state
+      document.querySelectorAll('.tab').forEach(tab => {
+        if (tab.getAttribute('data-tab-id') === tabId) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+
+      // Update content panel active state
+      document.querySelectorAll('.content-panel').forEach(panel => {
+        if (panel.id === `panel-${tabId}`) {
+          panel.classList.add('active');
+        } else {
+          panel.classList.remove('active');
+        }
+      });
+    }
+
+    // Close Tab Function
+    function closeTab(tabId, event) {
+      if (event) {
+        event.stopPropagation();
+      }
+
+      // Don't close the chat tab
+      if (tabId === 'chat') return;
+
+      // Remove from tabs array
+      const tabIndex = tabState.tabs.findIndex(t => t.id === tabId);
+      if (tabIndex > -1) {
+        tabState.tabs.splice(tabIndex, 1);
+      }
+
+      // Remove from history
+      const historyIndex = tabState.tabHistory.indexOf(tabId);
+      if (historyIndex > -1) {
+        tabState.tabHistory.splice(historyIndex, 1);
+      }
+
+      // Remove tab element
+      const tabEl = document.querySelector(`.tab[data-tab-id="${tabId}"]`);
+      if (tabEl) {
+        tabEl.remove();
+      }
+
+      // Remove content panel
+      const panel = document.getElementById(`panel-${tabId}`);
+      if (panel) {
+        panel.remove();
+      }
+
+      // If closing active tab, switch to previous tab or chat
+      if (tabState.activeTabId === tabId) {
+        const newActiveTab = tabState.tabHistory.length > 0
+          ? tabState.tabHistory[tabState.tabHistory.length - 1]
+          : 'chat';
+        switchToTab(newActiveTab);
+      }
+    }
+
+    // Context Menu State
+    let currentContextFile = null;
+    const contextMenu = document.getElementById('contextMenu');
+
+    // Show context menu on right-click
+    function showContextMenu(event, fileElement) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      currentContextFile = fileElement;
+
+      // Position the menu at cursor
+      contextMenu.style.left = `${event.pageX}px`;
+      contextMenu.style.top = `${event.pageY}px`;
+      contextMenu.classList.add('show');
+
+      // Highlight current label
+      const currentTag = fileElement.querySelector('.tag:not(.write)');
+      const currentLabel = currentTag ? Array.from(currentTag.classList).find(c => ['device', 'pricing', 'outcome', 'na', 'no-label'].includes(c)) : null;
+
+      document.querySelectorAll('.context-menu-item').forEach(item => {
+        const itemLabel = item.getAttribute('data-label');
+        if (itemLabel === currentLabel) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    // Hide context menu
+    function hideContextMenu() {
+      contextMenu.classList.remove('show');
+      currentContextFile = null;
+    }
+
+    // Change file label
+    function changeFileLabel(newLabel) {
+      if (!currentContextFile) return;
+
+      // Get the filename for tab update
+      const fileName = currentContextFile.childNodes[2].textContent.trim();
+
+      // Remove existing tag (except write access tag)
+      const existingTag = currentContextFile.querySelector('.tag:not(.write)');
+      if (existingTag) {
+        existingTag.remove();
+      }
+
+      // Add new tag if not "no-label"
+      if (newLabel !== 'no-label') {
+        const newTag = document.createElement('span');
+        newTag.className = `tag ${newLabel}`;
+
+        // Set label text based on type
+        const labelText = {
+          'device': 'Device',
+          'pricing': 'Pricing',
+          'outcome': 'Outcome',
+          'na': 'Unknown'
+        }[newLabel];
+
+        newTag.textContent = labelText;
+
+        // Insert before write access tag if it exists, otherwise append
+        const writeTag = currentContextFile.querySelector('.write');
+        if (writeTag) {
+          currentContextFile.insertBefore(newTag, writeTag);
+        } else {
+          currentContextFile.appendChild(newTag);
+        }
+      } else {
+        // Add "No Label" tag
+        const newTag = document.createElement('span');
+        newTag.className = 'tag no-label';
+        newTag.textContent = 'No Label';
+
+        const writeTag = currentContextFile.querySelector('.write');
+        if (writeTag) {
+          currentContextFile.insertBefore(newTag, writeTag);
+        } else {
+          currentContextFile.appendChild(newTag);
+        }
+      }
+
+      hideContextMenu();
+    }
+
+    // Mock AI Response Engine
+    const mockResponseEngine = {
+      // Get files from sidebar for realistic names
+      getRandomFile() {
+        const files = [
+          'Device_X_Specs.pdf', 'Electrical_Characteristics.docx',
+          'Pricing_2025.xlsx', 'Discount_Policies.pdf',
+          'Proposal_Template.docx', 'Metrics_Fill.xlsx', 'brochure_scan.jpg'
+        ];
+        return files[Math.floor(Math.random() * files.length)];
+      },
+
+      // Detect intent from user message
+      detectIntent(message) {
+        const lower = message.toLowerCase();
+        const intents = [];
+
+        if (lower.match(/read|open|show|view|extract|get|find|look/)) intents.push('read');
+        if (lower.match(/write|create|save|update|modify|edit|change|add/)) intents.push('write');
+        if (lower.match(/search|find|analyze|compare|check|review|examine/)) intents.push('search');
+        if (lower.match(/document|file|pdf|docx|xlsx|specs|pricing/)) intents.push('file');
+
+        return intents.length > 0 ? intents : ['general'];
+      },
+
+      // Generate operation steps based on intent
+      generateOperations(intents, message) {
+        const operations = [];
+        const file = this.getRandomFile();
+
+        if (intents.includes('read')) {
+          operations.push(
+            { text: `Opening ${file}`, duration: 800 },
+            { text: `Reading document contents`, duration: 1200 },
+            { text: `Extracting key information`, duration: 1000 },
+            { text: `Analysis complete`, duration: 600 }
+          );
+        } else if (intents.includes('write')) {
+          operations.push(
+            { text: `Locating ${file}`, duration: 700 },
+            { text: `Preparing changes`, duration: 1000 },
+            { text: `Writing content`, duration: 1500 },
+            { text: `Saved successfully`, duration: 600 }
+          );
+        } else if (intents.includes('search')) {
+          operations.push(
+            { text: `Searching document library`, duration: 900 },
+            { text: `Found 12 relevant documents`, duration: 800 },
+            { text: `Analyzing results`, duration: 1300 },
+            { text: `Compiled findings`, duration: 700 }
+          );
+        } else {
+          // Multi-step for complex queries
+          operations.push(
+            { text: `Processing request`, duration: 800 },
+            { text: `Accessing ${file}`, duration: 1000 },
+            { text: `Analyzing content`, duration: 1200 },
+            { text: `Generating response`, duration: 900 }
+          );
+        }
+
+        return operations;
+      },
+
+      // Generate AI response text based on intent
+      generateResponse(intents, message) {
+        const responses = {
+          read: [
+            "I've successfully read the document. The file contains detailed information across multiple sections. The key points include technical specifications, performance metrics, and compliance standards. Would you like me to dive deeper into any specific section?",
+            "Document analysis complete. I've extracted the main content which covers specifications, pricing details, and recommendations. The information is current as of the latest revision. What would you like to know more about?",
+            "I've reviewed the document thoroughly. It includes comprehensive details about the subject matter, with supporting data and references. I can help you locate specific information or summarize sections if needed."
+          ],
+          write: [
+            "I've successfully updated the document with the requested changes. All modifications have been applied, and the original file has been backed up with a timestamp. The changes are ready for your review.",
+            "Document update complete. I've made the requested modifications and saved the file. You can view the changes in the Diff Preview, and a backup of the original has been created automatically.",
+            "Changes have been applied successfully. The document now includes your requested updates, and all modifications are tracked for audit purposes. Would you like me to make any additional changes?"
+          ],
+          search: [
+            "I've completed the search across your document library. Found multiple relevant documents containing the information you requested. The results include technical specifications, pricing data, and related documentation. Would you like me to provide a detailed summary?",
+            "Search complete. I've analyzed 12 documents and identified the most relevant information based on your query. The findings show consistent data across multiple sources. Let me know if you'd like me to explore any specific aspect further.",
+            "I've searched through the available documents and compiled the results. The information spans across device specifications, pricing sheets, and outcome templates. I can provide detailed insights from any of these sources."
+          ],
+          general: [
+            "I've processed your request and analyzed the relevant information. Based on the available data, I can provide comprehensive assistance with your query. The analysis incorporates multiple data points from your document library. How can I help you further?",
+            "Request processed successfully. I've examined the relevant documents and compiled the information you need. The data is sourced from verified files in your workspace. Would you like me to elaborate on any specific aspect?",
+            "I've completed the analysis of your request. The information has been gathered from multiple authoritative sources in your document library. I'm ready to provide detailed insights or perform additional operations as needed."
+          ]
+        };
+
+        const primaryIntent = intents.includes('read') ? 'read'
+          : intents.includes('write') ? 'write'
+          : intents.includes('search') ? 'search'
+          : 'general';
+
+        const responseArray = responses[primaryIntent];
+        return responseArray[Math.floor(Math.random() * responseArray.length)];
+      }
+    };
+
+    // Operation Log UI Generator
+    function createOperationLog(operations) {
+      const logContainer = document.createElement('div');
+      logContainer.className = 'operation-log';
+
+      const header = document.createElement('div');
+      header.className = 'operation-log-header';
+      header.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="2"/>
+          <path d="M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>Operation Log</span>
+      `;
+      logContainer.appendChild(header);
+
+      // Create step elements
+      const stepElements = operations.map((op, index) => {
+        const step = document.createElement('div');
+        step.className = 'operation-step pending';
+        step.innerHTML = `
+          <div class="operation-step-icon">○</div>
+          <div class="operation-step-text">${op.text}</div>
+        `;
+        logContainer.appendChild(step);
+        return step;
+      });
+
+      return { logContainer, stepElements };
+    }
+
+    // Execute operation steps with animation
+    async function executeOperations(stepElements, operations) {
+      for (let i = 0; i < operations.length; i++) {
+        const step = stepElements[i];
+        const operation = operations[i];
+
+        // Mark as active
+        step.classList.remove('pending');
+        step.classList.add('active');
+        step.querySelector('.operation-step-icon').textContent = '▸';
+
+        // Wait for operation duration
+        await new Promise(resolve => setTimeout(resolve, operation.duration));
+
+        // Mark as complete
+        step.classList.remove('active');
+        step.classList.add('complete');
+        step.querySelector('.operation-step-icon').textContent = '✓';
+      }
+    }
+
+    // Character-by-character streaming system
+    async function streamText(element, text, chat) {
+      const cursor = document.createElement('span');
+      cursor.className = 'typing-cursor';
+      element.appendChild(cursor);
+
+      let currentText = '';
+
+      for (let i = 0; i < text.length; i++) {
+        currentText += text[i];
+
+        // Remove cursor, update text, add cursor back
+        cursor.remove();
+        element.textContent = currentText;
+        element.appendChild(cursor);
+
+        // Calculate delay based on character type
+        let delay = 20; // Base typing speed (faster)
+
+        // Pause longer at punctuation
+        if (['.', '!', '?'].includes(text[i])) {
+          delay = 150;
+        } else if ([',', ';', ':'].includes(text[i])) {
+          delay = 80;
+        } else if (text[i] === ' ') {
+          delay = 25;
+        }
+
+        // Random variation for natural feel
+        delay += Math.random() * 10 - 5;
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+
+        // Auto-scroll during typing
+        if (i % 10 === 0) {
+          chat.scrollTop = chat.scrollHeight;
+        }
+      }
+
+      // Remove cursor when done
+      cursor.remove();
+      element.textContent = currentText;
+
+      // Final scroll
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Add click handlers to file elements
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.file').forEach(fileEl => {
+        fileEl.style.cursor = 'pointer';
+
+        // Left click - open tab
+        fileEl.addEventListener('click', function(e) {
+          // Only open tab if not right-clicking
+          if (e.button === 0) {
+            const fileName = this.childNodes[2].textContent.trim();
+            openTab(fileName);
+          }
+        });
+
+        // Right click - show context menu
+        fileEl.addEventListener('contextmenu', function(e) {
+          showContextMenu(e, this);
+        });
+      });
+
+      // Context menu item clicks
+      document.querySelectorAll('.context-menu-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const label = this.getAttribute('data-label');
+          changeFileLabel(label);
+        });
+      });
+
+      // Close context menu on outside click
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('.context-menu') && !e.target.closest('.file')) {
+          hideContextMenu();
+        }
+      });
+
+      // Close context menu on ESC key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          hideContextMenu();
+        }
+      });
     });
   </script>
 </body>
