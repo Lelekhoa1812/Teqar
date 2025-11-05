@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi‑Agent Knowledge Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b1020;            /* deep space */
+      --panel: rgba(255,255,255,0.06);
+      --panel-2: rgba(255,255,255,0.10);
+      --text: #e8edf7;
+      --muted:#a9b3c7;
+      --accent:#7c5cff;         /* purple */
+      --accent-2:#16a34a;       /* green */
+      --accent-3:#f59e0b;       /* amber */
+      --accent-4:#38bdf8;       /* sky */
+      --danger:#ef4444;
+      --ok:#22c55e;
+      --chip:#0f172a;
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 15% -10%, #1b1f3a 0%, transparent 65%),
+        radial-gradient(1000px 800px at 110% 10%, #11263f 0%, transparent 60%),
+        linear-gradient(180deg, #0a0f1d 0%, #0b1020 100%);
+    }
+    .app{
+      display:grid; grid-template-rows:auto 1fr; height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:20;
+      display:flex; gap:16px; align-items:center; justify-content:space-between;
+      padding:14px 18px; border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(7,10,20,.75), rgba(7,10,20,.35));
+      backdrop-filter: blur(8px);
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:32px;height:32px;display:grid;place-items:center;background:linear-gradient(135deg,#7c5cff,#38bdf8);border-radius:10px;box-shadow:var(--shadow)}
+    .title{font-weight:700;letter-spacing:.2px}
+    .actions{display:flex;gap:8px}
+    .btn{
+      padding:9px 16px;border:1px solid var(--border);border-radius:12px;
+      background:var(--panel); color:var(--text); cursor:pointer; font-weight:600;
+      transition:.18s transform ease,.18s background-color ease,.18s box-shadow ease;
+      font-size:13px;
+    }
+    .btn:hover{transform:translateY(-1px); background:var(--panel-2); box-shadow:0 4px 12px rgba(0,0,0,.25)}
+    .btn.primary{background:linear-gradient(135deg,#7c5cff,#38bdf8); border-color:transparent; box-shadow:0 2px 8px rgba(124,92,255,.3)}
+    .btn.primary:hover{box-shadow:0 4px 16px rgba(124,92,255,.4)}
+
+    .main{
+      display:grid; grid-template-columns: 320px 1fr; gap:18px; padding:18px; height:calc(100vh - 64px);
+    }
+    aside{
+      height:100%; border:1px solid var(--border); border-radius:var(--radius);
+      background:var(--panel); padding:16px; overflow:auto; box-shadow:var(--shadow);
+      backdrop-filter:blur(8px);
+    }
+    .legend{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 14px}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04); font-weight:600; font-size:12px}
+    .dot{width:8px;height:8px;border-radius:50%}
+    .dot.device{background:#38bdf8}
+    .dot.pricing{background:#f59e0b}
+    .dot.outcome{background:#22c55e}
+    .dot.na{background:#a9b3c7}
+
+    .search{display:flex;align-items:center;gap:10px;margin:.25rem 0 12px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border)}
+    .search input{all:unset;flex:1;color:var(--text)}
+
+    .tree{margin-top:6px}
+    details{border-radius:12px; margin:2px 0;}
+    summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:10px}
+    summary:hover{background:rgba(255,255,255,.05); transition:.15s background ease}
+    summary::-webkit-details-marker{display:none}
+    .folder, .file{display:flex;align-items:center; gap:10px; padding:8px 10px; border-radius:10px}
+    .file{margin-left:34px}
+    .file:hover{background:rgba(255,255,255,.05); cursor:pointer; transition:.15s background ease}
+    .tag{font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--border); background:rgba(255,255,255,.06)}
+    .tag.device{color:#93c5fd; border-color:rgba(56,189,248,.35)}
+    .tag.pricing{color:#fed7aa; border-color:rgba(245,158,11,.35)}
+    .tag.outcome{color:#bbf7d0; border-color:rgba(34,197,94,.35)}
+    .tag.na{color:#cbd5e1; border-color:rgba(203,213,225,.35)}
+    .write{margin-left:auto; font-size:10px; padding:3px 6px; border-radius:6px; background:rgba(34,197,94,.15); color:#86efac}
+
+    main{
+      height:100%; border:1px solid var(--border); border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      overflow:hidden; display:grid; grid-template-rows:auto 1fr auto; box-shadow:var(--shadow);
+      backdrop-filter:blur(8px);
+    }
+    .room-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border)}
+    .room-title{font-weight:700}
+    .badge{font-size:11px; padding:5px 8px; border-radius:999px; background:rgba(124,92,255,.16); color:#c7b8ff; border:1px solid rgba(124,92,255,.35)}
+
+    .chat{padding:20px; overflow:auto; display:flex; flex-direction:column; gap:14px; scroll-behavior:smooth}
+    .msg{max-width:70%; padding:14px 16px; border-radius:14px; line-height:1.5; position:relative; animation:fadeIn .3s ease}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .user{align-self:flex-end; background:linear-gradient(135deg,#1d4ed8,#7c3aed); box-shadow:0 2px 8px rgba(29,78,216,.2)}
+    .bot{align-self:flex-start; background:rgba(255,255,255,.06); border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.15)}
+    .meta{font-size:11px; color:var(--muted); margin-top:6px; display:flex; gap:8px; align-items:center}
+    .sources{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+    .src{font-size:11px; padding:4px 8px; border-radius:999px; background:rgba(56,189,248,.15); color:#bae6fd; border:1px solid rgba(56,189,248,.35)}
+
+    .composer{display:flex; gap:10px; padding:14px; border-top:1px solid var(--border); background:rgba(0,0,0,.15); backdrop-filter:blur(8px)}
+    .composer input{all:unset; flex:1; padding:12px 16px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,.05); transition:.18s border-color ease,.18s background ease}
+    .composer input:focus{border-color:var(--accent); background:rgba(255,255,255,.08); outline:none}
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .main{grid-template-columns:1fr; height:auto}
+      aside{order:2; height:320px}
+      main{order:1; height:520px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2l3.5 6.5L22 9l-5 4.9L18 21l-6-3.2L6 21l1-7.1L2 9l6.5-.5L12 2z" fill="white" opacity=".9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="title">Multi‑Agent Knowledge Assistant</div>
+          <div style="font-size:12px;color:var(--muted)">Intelligent document management and analysis</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn">Re‑index</button>
+        <button class="btn">Diff Preview</button>
+        <button class="btn primary">Fill Outcome</button>
+      </div>
+    </header>
+
+    <div class="main">
+      <!-- Sidebar: Directory & Labels -->
+      <aside>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="font-weight:800; letter-spacing:.2px">Workspace</div>
+          <span class="badge">Connected</span>
+        </div>
+
+        <div class="legend">
+          <span class="chip"><span class="dot device"></span>Device</span>
+          <span class="chip"><span class="dot pricing"></span>Pricing</span>
+          <span class="chip"><span class="dot outcome"></span>Outcome</span>
+          <span class="chip"><span class="dot na"></span>Unknown</span>
+        </div>
+
+        <div class="search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.2-4.2" stroke="#9fb2d0" stroke-width="2" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="#9fb2d0" stroke-width="2" fill="none"/></svg>
+          <input placeholder="Search files…" />
+        </div>
+
+        <div style="font-size:12px; color:var(--muted); margin:6px 0 8px;">Root: /ClientDocs</div>
+
+        <div class="tree">
+          <details open>
+            <summary>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 4h7l2 2h9v12a2 2 0 0 1-2 2H3z" stroke="#c8d1e4" stroke-width="1.6"/></svg>
+              <strong>Acme Project</strong>
+            </summary>
+
+            <details open>
+              <summary>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h7l2 2h9v10a2 2 0 0 1-2 2H3z" stroke="#c8d1e4"/></svg>
+                Device Specs <span class="tag device">Device</span>
+              </summary>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                Device_X_Specs.pdf
+                <span class="tag device">Device</span>
+              </div>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                Electrical_Characteristics.docx
+                <span class="tag device">Device</span>
+              </div>
+            </details>
+
+            <details open>
+              <summary>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h7l2 2h9v10a2 2 0 0 1-2 2H3z" stroke="#c8d1e4"/></svg>
+                Pricing Sheets <span class="tag pricing">Pricing</span>
+              </summary>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                Pricing_2025.xlsx
+                <span class="tag pricing">Pricing</span>
+              </div>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                Discount_Policies.pdf
+                <span class="tag pricing">Pricing</span>
+              </div>
+            </details>
+
+            <details open>
+              <summary>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h7l2 2h9v10a2 2 0 0 1-2 2H3z" stroke="#c8d1e4"/></svg>
+                Outcome Templates <span class="tag outcome">Outcome</span>
+              </summary>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                Proposal_Template.docx
+                <span class="tag outcome">Outcome</span>
+                <span class="write">Write Access</span>
+              </div>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                Metrics_Fill.xlsx
+                <span class="tag outcome">Outcome</span>
+                <span class="write">Write Access</span>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h7l2 2h9v10a2 2 0 0 1-2 2H3z" stroke="#c8d1e4"/></svg>
+                Unclassified
+              </summary>
+              <div class="file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" stroke="#c8d1e4"/></svg>
+                brochure_scan.jpg
+                <span class="tag na">Unknown</span>
+              </div>
+            </details>
+          </details>
+        </div>
+      </aside>
+
+      <!-- Main: Chat demo -->
+      <main>
+        <div class="room-head">
+          <div class="room-title">Chat with your documents</div>
+          <div style="display:flex; gap:8px; align-items:center">
+            <span class="badge">RAG On</span>
+            <span class="badge" style="background:rgba(34,197,94,.16); color:#b7f7c7; border-color:rgba(34,197,94,.35)">No Hallucinations</span>
+          </div>
+        </div>
+
+        <div class="chat" id="chat">
+          <div class="msg bot">
+            Welcome! I can help you with three powerful capabilities:<br><br>
+            <strong>1. Label folders/files</strong> — Automatically categorize items as <em>Device</em>, <em>Pricing</em>, <em>Outcome</em>, or <em>Unknown</em> to organize your workspace.<br><br>
+            <strong>2. Chat with your documents</strong> — Ask complex questions across your document library and receive grounded answers with source citations.<br><br>
+            <strong>3. Actioner</strong> — Execute updates and modifications to Word or Excel files based on your instructions, with automatic diff tracking and backups.
+            <div class="meta">Assistant • just now</div>
+          </div>
+
+          <div class="msg user">Label the entire Acme Project folder structure: categorize Device Specs as Device, Pricing Sheets as Pricing, and all templates in Outcome Templates as Outcome. Also mark any unclassified items as Unknown.</div>
+
+          <div class="msg bot">
+            ✅ Classification complete. I've analyzed the folder structure and applied labels:<br><br>
+            • <strong>Device Specs</strong> → <em>Device</em> (2 files)<br>
+            • <strong>Pricing Sheets</strong> → <em>Pricing</em> (2 files)<br>
+            • <strong>Outcome Templates</strong> → <em>Outcome</em> (2 files with write access)<br>
+            • <strong>Unclassified</strong> → <em>Unknown</em> (1 file)<br><br>
+            Labels are now visible in the workspace panel. You can adjust them manually at any time.
+            <div class="meta">Assistant • 2s</div>
+          </div>
+
+          <div class="msg user">Based on the device specifications and pricing documents, what are the key performance characteristics of Device X, its current pricing tier, and how does it compare to similar devices in terms of cost-effectiveness? Also, what are the recommended configurations for optimal outcomes?</div>
+
+          <div class="msg bot">
+            Analyzing multiple documents to provide a comprehensive answer...
+            <div class="sources">
+              <span class="src">Device_X_Specs.pdf ▸ § Electrical Characteristics</span>
+              <span class="src">Device_X_Specs.pdf ▸ § Performance Metrics</span>
+              <span class="src">Electrical_Characteristics.docx ▸ § Device X</span>
+              <span class="src">Pricing_2025.xlsx ▸ Sheet: Device Pricing</span>
+              <span class="src">Pricing_2025.xlsx ▸ Sheet: Comparison Matrix</span>
+              <span class="src">Discount_Policies.pdf ▸ § Volume Tiers</span>
+            </div>
+            <div class="meta">Assistant • 3s</div>
+          </div>
+
+          <div class="msg bot">
+            <strong>Key Performance Characteristics:</strong><br>
+            • Throughput: 10 Gb/s (full duplex)<br>
+            • Latency: < 2ms<br>
+            • Power consumption: 15W typical<br>
+            • Operating temperature: -40°C to +85°C<br><br>
+            
+            <strong>Pricing Analysis:</strong><br>
+            • Base unit price: A$5,000<br>
+            • Volume discount tiers: 10% (10+ units), 15% (50+ units), 20% (100+ units)<br>
+            • Cost per Gb/s: A$500 (competitive with Device Y at A$520)<br><br>
+            
+            <strong>Recommended Configurations:</strong><br>
+            • Standard deployment: 2 units in redundant configuration<br>
+            • High-performance: 4 units with load balancing<br>
+            • Cost-optimized: Single unit with failover to Device Y<br><br>
+            
+            All information is sourced from the documents above. Would you like me to update any proposal templates with these findings?
+            <div class="meta">Assistant • 5s</div>
+          </div>
+
+          <div class="msg user">Update Proposal_Template.docx with the Device X performance metrics and pricing information. Specifically, add a new section titled "Technical Specifications" after the introduction, and update the pricing table in the document with the current A$5,000 base price and volume discount tiers. Also, modify Metrics_Fill.xlsx to include Device X throughput (10 Gb/s), latency (< 2ms), and unit price (A$5,000) in the appropriate rows.</div>
+
+          <div class="msg bot">
+            Analyzing target documents and preparing changes...
+            <div class="sources">
+              <span class="src">Proposal_Template.docx ▸ Structure analysis</span>
+              <span class="src">Metrics_Fill.xlsx ▸ Sheet: Device Metrics</span>
+            </div>
+            <div class="meta">Assistant • 2s</div>
+          </div>
+
+          <div class="msg bot">
+            📋 <strong>Proposed Changes Preview:</strong><br><br>
+            <strong>Proposal_Template.docx:</strong><br>
+            • Add "Technical Specifications" section after introduction<br>
+            • Insert Device X performance metrics (10 Gb/s, < 2ms latency, 15W power)<br>
+            • Update pricing table with A$5,000 base and volume tiers (10%/15%/20%)<br><br>
+            
+            <strong>Metrics_Fill.xlsx:</strong><br>
+            • Row 5: Device X → Throughput: 10 Gb/s<br>
+            • Row 5: Device X → Latency: < 2ms<br>
+            • Row 5: Device X → Unit Price: A$5,000<br><br>
+            
+            Ready to apply changes. Proceed?
+            <div class="meta">Assistant • 4s</div>
+          </div>
+
+          <div class="msg bot">
+            ✍️ <strong>Changes Applied Successfully</strong><br><br>
+            ✅ <em>Proposal_Template.docx</em> — Section added, pricing table updated<br>
+            ✅ <em>Metrics_Fill.xlsx</em> — Device X metrics populated<br><br>
+            
+            <strong>Backup & Diff:</strong><br>
+            • Original files backed up with timestamps<br>
+            • Change summary available in Diff Preview<br>
+            • All modifications tracked for audit purposes<br><br>
+            
+            Documents are ready for review. You can access the diff preview from the header menu.
+            <div class="meta">Assistant • 8s</div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <input placeholder="Ask questions, request actions, or label documents…" id="messageInput" />
+          <button class="btn primary" onclick="sendMessage()">Send</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    function sendMessage(){
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+      if (!message) return;
+      
+      const chat = document.getElementById('chat');
+      const u = document.createElement('div');
+      u.className='msg user';
+      u.textContent = message;
+      chat.appendChild(u);
+      input.value = '';
+
+      setTimeout(() => {
+        const b = document.createElement('div');
+        b.className='msg bot';
+        b.innerHTML = 'Processing your request...';
+        chat.appendChild(b);
+        chat.scrollTop = chat.scrollHeight;
+      }, 300);
+
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    document.getElementById('messageInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
